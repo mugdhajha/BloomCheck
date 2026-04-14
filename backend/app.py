@@ -207,3 +207,6 @@ if __name__ == "__main__":
 
 print("MODEL PATH:", MODEL_PATH)
 print("FEATURES LOADED:", FEATURE_COLS)
+
+if __name__ == "__main__":
+    app.run()

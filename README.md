@@ -1,113 +1,135 @@
-# 🌸 BloomCheck — PCOS Detection & Awareness
+# 🌸 BloomCheck
 
-A full-stack AI-powered PCOS detection web application with a pastel health-tech aesthetic.
+A pastel, health-tech themed **PCOS awareness + early risk screening** web app.
+
+BloomCheck lets a user answer a short set of questions (basic info + visible symptoms + lifestyle) and then returns a **risk score** with clear, actionable next steps — plus educational content and a built-in PCOS chatbot.
+
+> **Disclaimer:** BloomCheck is for informational purposes only. It is **not** a medical device and does **not** diagnose PCOS. Always consult a qualified healthcare professional.
 
 ---
 
-## 📁 Project Structure
+## What it can do
 
-```
-bloomcheck/
-├── backend/
-│   ├── app.py               ← Flask REST API
-│   ├── train_model.py       ← ML training script
-│   ├── model.pkl            ← Trained model (generated after training)
-│   ├── pcos_dataset.csv     ← Synthetic dataset (generated after training)
-│   └── requirements.txt
-│
-└── frontend/
+### ✅ PCOS risk check (under ~2 minutes)
+- 3-step guided form: **About you → Symptoms → Lifestyle**
+- Calculates BMI and shows a quick BMI category badge
+- Submits your answers to the backend `/predict` endpoint
+- Displays:
+  - **Probability (%)**
+  - Category label: **Low / Moderate / High**
+  - Key factors that increased/decreased risk
+  - Recommendations tailored to the risk band
+
+### ✅ Works even if the backend is down (demo-friendly)
+If `/predict` fails, the frontend uses an **offline heuristic fallback** to generate a reasonable risk score + factors so the UI still works.
+
+### ✅ Results dashboard UI
+- Animated risk ring + label
+- Key factor chips (↑ increases / ↓ decreases)
+- Recommendation cards
+- Simple chart-style sections for:
+  - Global prevalence (static demo data)
+  - Lifestyle vs risk (static demo data)
+
+### ✅ Awareness / education page
+A dedicated “Understanding PCOS” page with:
+- Core explanation of PCOS (Rotterdam criteria context)
+- Symptom cards
+- Management & prevention tips
+
+### ✅ Built-in PCOS chatbot (offline)
+The “AI Chat” page is currently a **fully offline, keyword-based** chatbot (“Bloom”) with topic coverage like symptoms, diagnosis, diet, exercise, treatment, fertility, mental health, supplements, etc.
+
+---
+
+## Tech stack
+
+- **Frontend:** React 18 + Vite
+- **Backend:** Flask (REST API) + scikit-learn model served from `model.pkl`
+- **Dev proxy:** Vite proxies API routes to Flask during development
+
+---
+
+## Project structure
+
+```text
+.
+├── backend
+│   ├── app.py              # Flask API (health, predict, insights, save-result)
+│   ├── train_model.py      # Generates synthetic data + trains model.pkl
+│   ├── requirements.txt
+│   └── model.pkl           # generated after training
+└── frontend
     ├── index.html
-    ├── vite.config.js
     ├── package.json
-    ├── .env.example         ← Copy to .env and add your API key
-    └── src/
-        ├── App.jsx
-        ├── main.jsx
-        ├── index.css
-        ├── tokens.js
-        ├── components/
-        │   ├── Nav.jsx
-        │   └── Particles.jsx
-        └── pages/
-            ├── Landing.jsx
-            ├── FormPage.jsx
-            ├── Results.jsx
-            ├── Awareness.jsx
-            └── Chat.jsx
+    ├── vite.config.js
+    └── src
+        ├── components
+        ├── pages
+        └── App.jsx
 ```
 
 ---
 
-## 🚀 Setup & Run (Step by Step)
+## Quickstart (local dev)
 
-### Prerequisites
-- Python 3.9+
-- Node.js 18+
-- An Anthropic API key (for the AI chat — free tier works)
-
----
-
-### Step 1 — Backend
+### 1) Backend (Flask + model)
 
 ```bash
-# Navigate into backend
-cd bloomcheck/backend
-
-# Create a virtual environment
+cd backend
 python -m venv venv
 
-# Activate it
-source venv/bin/activate        # Mac / Linux
-# venv\Scripts\activate         # Windows
+# Windows:
+venv\Scripts\activate
 
-# Install Python dependencies
+# macOS/Linux:
+# source venv/bin/activate
+
 pip install -r requirements.txt
-
-# Train the ML model (creates model.pkl + pcos_dataset.csv)
 python train_model.py
-
-# Start the Flask API server
 python app.py
-# ✅ Running on http://localhost:5000
 ```
 
----
+Backend runs at: `http://localhost:5000`
 
-### Step 2 — Frontend
+### 2) Frontend (Vite + React)
 
-Open a **new terminal window**:
+Open a new terminal:
 
 ```bash
-# Navigate into frontend
-cd bloomcheck/frontend
-
-# Install Node dependencies
+cd frontend
 npm install
-
-# Set up your environment file
-cp .env.example .env
-# Then open .env and replace "your_anthropic_api_key_here"
-# with your actual key from https://console.anthropic.com
-
-# Start the dev server
 npm run dev
-# ✅ Running on http://localhost:5173
 ```
 
-Open **http://localhost:5173** in your browser.
+Frontend runs at: `http://localhost:5173`
 
 ---
 
-## 🔌 API Endpoints
+## Pages (in-app navigation)
 
-| Method | Endpoint        | Description                          |
-|--------|----------------|--------------------------------------|
-| GET    | `/health`       | Health check + model status          |
-| POST   | `/predict`      | PCOS risk prediction                 |
-| GET    | `/insights`     | Global stats & awareness data        |
-| POST   | `/save-result`  | Save result to in-memory store       |
+| Page | What you see |
+|---|---|
+| Home | hero + “how it works” + quick stats |
+| Check Risk | 3-step questionnaire |
+| Results | risk ring + factors + recommendations + charts |
+| Awareness | educational cards + management tips |
+| AI Chat | offline “Bloom” PCOS Q&A assistant |
 
-### POST `/predict` — Request body
+---
+
+## API
+
+Base URL (local): `http://localhost:5000`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/health` | health check + whether the model loaded |
+| POST | `/predict` | returns risk probability + label + suggestions |
+| GET | `/insights` | returns demo global/lifestyle stats |
+| POST | `/save-result` | saves results to an **in-memory** list (demo) |
+
+### `POST /predict` request
 
 ```json
 {
@@ -126,7 +148,7 @@ Open **http://localhost:5173** in your browser.
 }
 ```
 
-### POST `/predict` — Response
+### `POST /predict` response (example)
 
 ```json
 {
@@ -135,54 +157,42 @@ Open **http://localhost:5173** in your browser.
   "color": "#f472b6",
   "emoji": "💜",
   "message": "Several symptoms are commonly linked with PCOS...",
-  "suggestions": ["See a doctor or gynaecologist...", "..."],
+  "suggestions": ["..."],
   "key_factors": [
-    { "feature": "Irregular Cycle", "impact": "increases", "value": "42 days" },
-    { "feature": "Regular Exercise", "impact": "decreases", "value": "Yes" }
+    { "feature": "Irregular Cycle", "impact": "increases", "value": "42 days" }
   ],
-  "timestamp": "2025-04-11T10:00:00"
+  "timestamp": "2026-04-29T14:16:00.000000"
 }
 ```
 
 ---
 
-## 🧠 ML Model
+## ML model (how it works)
 
-| Property       | Value                                      |
-|---------------|--------------------------------------------|
-| Algorithm      | Random Forest + Platt calibration          |
-| Training data  | 2,000 synthetic samples (50/50 balanced)   |
-| Features       | 11 (age, BMI, cycle length, 8 symptoms)    |
-| Anti-bias      | `class_weight='balanced'` + CalibratedCV   |
-| Expected AUC   | ~0.92                                      |
+Training script: `backend/train_model.py`
 
----
-
-## 💬 AI Chat Setup
-
-The chat uses the Claude API directly from the browser (local dev only).
-
-1. Get a free API key at **https://console.anthropic.com**
-2. Copy `.env.example` → `.env`
-3. Set `VITE_ANTHROPIC_API_KEY=sk-ant-...`
-4. Restart `npm run dev`
-
-> **Production note:** Never expose your API key in a deployed frontend. Use a backend proxy endpoint instead.
+- Generates a **synthetic dataset** (`pcos_dataset.csv`)
+- Trains a **RandomForestClassifier** on 11 features:
+  - age, BMI, cycle length
+  - weight gain, hair growth, skin darkening
+  - hair loss, acne/pimples, mood swings
+  - fast food, regular exercise
+- Saves `model.pkl` as:
+  - `pipeline`: the trained model
+  - `features`: feature column order expected by the API
 
 ---
 
-## 🎨 Pages
+## Privacy & data
 
-| Page       | Route (nav) | Description                                      |
-|-----------|-------------|--------------------------------------------------|
-| Landing   | Home        | Hero, stats, how-it-works                        |
-| Form      | Check Risk  | 3-step form: basic info → symptoms → lifestyle   |
-| Results   | (auto)      | Risk ring, factor attribution, charts            |
-| Awareness | Awareness   | Educational cards on symptoms & management       |
-| Chat      | AI Chat     | Claude-powered PCOS Q&A assistant                |
+- The frontend does **not** require sign-in.
+- The backend’s `/save-result` uses an **in-memory** list for demo purposes only (restarts clear it).
+- No database is configured in this repo.
 
 ---
 
-## ⚠️ Disclaimer
+## Troubleshooting
 
-BloomCheck is an informational tool only. It is **not a medical device** and results are **not a diagnosis**. Always consult a qualified healthcare professional for medical advice.
+- **503 Model not loaded**: run `python backend\train_model.py` to generate `backend\model.pkl`.
+- **Frontend can’t reach backend**: ensure Flask is running on port **5000**. The UI still works via offline fallback.
+- **Port already in use**: stop the process using the port or change ports in `backend\app.py` / `vite.config.js`.
